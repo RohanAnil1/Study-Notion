@@ -1,0 +1,68 @@
+{
+  "modules": [
+    {
+      "title": "Introduction to Python Programming",
+      "description": "This module covers the fundamental concepts of Python, including data types, operators, and basic control flow.  You'll learn how to write, run, and debug simple Python programs.",
+      "order": 1,
+      "lessons": [
+        {
+          "title": "Setting up your Python Environment",
+          "content": "Installing Python, choosing an IDE (VS Code, PyCharm, etc.), running your first 'Hello, world!' program, understanding the command line interface.",
+          "order": 1
+        },
+        {
+          "title": "Data Types and Variables",
+          "content": "Understanding integers, floats, strings, booleans.  Variable assignment, naming conventions, and type conversion.",
+          "order": 2
+        },
+        {
+          "title": "Operators and Expressions",
+          "content": "Arithmetic operators, comparison operators, logical operators.  Order of operations and evaluating expressions.",
+          "order": 3
+        },
+        {
+          "title": "Basic Input and Output",
+          "content": "Using the `input()` function to get user input.  Using the `print()` function to display output.  Formatting output using f-strings.",
+          "order": 4
+        },
+        {
+          "title": "Control Flow: Conditional Statements",
+          "content": "`if`, `elif`, and `else` statements.  Nested conditional statements and boolean logic in conditionals.",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "title": "Data Structures and Control Flow II",
+      "description": "This module delves into Python's core data structures \u2013 lists, tuples, dictionaries \u2013 and expands on control flow with loops.  You'll learn to manipulate data efficiently and write more complex programs.",
+      "order": 2,
+      "lessons": [
+        {
+          "title": "Lists and Tuples",
+          "content": "Creating, accessing, and modifying lists.  Understanding the difference between lists and tuples.  List comprehensions.",
+          "order": 1
+        },
+        {
+          "title": "Dictionaries",
+          "content": "Creating, accessing, and modifying dictionaries.  Working with keys and values.  Iterating through dictionaries.",
+          "order": 2
+        },
+        {
+          "title": "Control Flow: Loops",
+          "content": "`for` loops and `while` loops.  Iterating through lists, tuples, and dictionaries.  `break` and `continue` statements.",
+          "order": 3
+        },
+        {
+          "title": "Functions",
+          "content": "Defining and calling functions.  Parameters and arguments.  Return values.  Scope and lifetime of variables.",
+          "order": 4
+        },
+        {
+          "title": "Working with Files",
+          "content": "Opening, reading, writing, and closing files.  Handling file exceptions.",
+          "order": 5
+        }
+      ]
+    }
+  ]
+}

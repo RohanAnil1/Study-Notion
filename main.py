@@ -51,17 +51,20 @@ def create_app(config_class=Config):
 
     # Create tables and seed initial data
     with app.app_context():
-        # Ensure instance directory exists for SQLite
-        instance_path = app.instance_path
-        if not os.path.exists(instance_path):
-            os.makedirs(instance_path)
+        # Ensure database directory exists (works for any absolute SQLite path)
+        db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if db_uri.startswith('sqlite:///'):
+            db_path = db_uri.replace('sqlite:///', '', 1)
+            db_dir = os.path.dirname(os.path.abspath(db_path))
+            if not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
         db.create_all()
         from models import load_initial_data
         load_initial_data()
 
     return app
 
-app = create_app()
 
 if __name__ == '__main__':
+    app = create_app()
     app.run(debug=True)

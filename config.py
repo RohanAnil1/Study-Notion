@@ -4,12 +4,16 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Compute absolute path for SQLite database
+basedir = os.path.dirname(os.path.abspath(__file__))
+
 class Config:
     # Basic Flask configuration
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
     
-    # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+    # Database configuration - always use absolute path
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'instance', 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_recycle": 300,

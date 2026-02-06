@@ -11,16 +11,15 @@ import sys
 import os
 
 # Add your project directory to the sys.path
-# Replace 'yourusername' with your actual PythonAnywhere username
-project_home = '/home/yourusername/Study-Notion'
+# Replace 'RohanAnil' with your actual PythonAnywhere username
+project_home = '/home/RohanAnil/Study-Notion'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
-# Set environment variables
-os.environ['SECRET_KEY'] = 'change-this-to-a-real-secret-key'
+# Set environment variables (optional overrides)
+os.environ['SECRET_KEY'] = 'study-notion-secret-key-2026'
 os.environ['GEMINI_API_KEY'] = ''  # Optional: add your Gemini API key
-os.environ['DATABASE_URL'] = 'sqlite:////home/yourusername/Study-Notion/instance/app.db'
 
-# Import the Flask app
+# Import and create the Flask app
 from main import create_app
 application = create_app()

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.instructor_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.edit_course', course_id=course.id) }}">{{ course.title }}</a></li>
+            <li class="breadcrumb-item active">{{ 'New Section' if is_new else section.title }}</li>
+        </ol>
+    </nav>
+
+    <h2 class="fw-bold mb-4">{{ 'Add New Section' if is_new else 'Edit Section' }}</h2>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label fw-bold") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Enter section title") }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback">{% for error in form.title.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label fw-bold") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3, placeholder="Optional section description...") }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback">{% for error in form.description.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>{{ 'Add Section' if is_new else 'Save Changes' }}
+                            </button>
+                            <a href="{{ url_for('main.edit_course', course_id=course.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lectures list (only when editing existing section) -->
+    {% if not is_new and section and lectures is defined %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Lectures</h4>
+                <a href="{{ url_for('main.create_lecture', section_id=section.id) }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Add Lecture
+                </a>
+            </div>
+
+            {% if lectures %}
+            <div class="list-group" id="lectures-list">
+                {% for lecture in lectures %}
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-lecture-id="{{ lecture.id }}">
+                    <div>
+                        <i class="bi bi-grip-vertical text-muted me-2"></i>
+                        <strong>{{ lecture.order }}. {{ lecture.title }}</strong>
+                        {% if lecture.video_type %}
+                        <span class="badge bg-info ms-2"><i class="bi bi-play-circle me-1"></i>{{ lecture.video_type }}</span>
+                        {% endif %}
+                        {% if lecture.duration %}
+                        <small class="text-muted ms-2">{{ lecture.duration }} min</small>
+                        {% endif %}
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('main.edit_lecture', lecture_id=lecture.id) }}" class="btn btn-outline-primary" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('main.delete_lecture', lecture_id=lecture.id) }}"
+                            style="display: inline;"
+                            onsubmit="return confirm('Delete this lecture?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3 mb-0">No lectures yet. Add your first lecture to this section.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

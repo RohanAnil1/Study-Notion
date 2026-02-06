@@ -1,0 +1,572 @@
+/* Study-Notion - GitHub Dark Theme */
+
+/* GitHub Color Variables */
+:root {
+    /* GitHub Dark Backgrounds */
+    --bg-primary: #0d1117;
+    /* Main background */
+    --bg-secondary: #161b22;
+    /* Cards/surfaces */
+    --bg-tertiary: #21262d;
+    /* Elevated surfaces */
+    --border-color: #30363d;
+    /* Borders */
+
+    /* GitHub Accent Colors */
+    --accent-orange: #f97316;
+    /* Primary orange accent */
+    --accent-orange-hover: #ea580c;
+    /* Orange hover */
+    --accent-blue: #58a6ff;
+    /* Links/info */
+    --accent-green: #238636;
+    /* Success */
+    --accent-yellow: #d29922;
+    /* Warning */
+    --accent-red: #da3633;
+    /* Danger */
+
+    /* Text Colors */
+    --text-primary: #e6edf3;
+    /* Primary text */
+    --text-secondary: #8b949e;
+    /* Secondary text */
+    --text-muted: #6e7681;
+    /* Muted text */
+
+    /* Border Radius */
+    --border-radius: 0.375rem;
+    --border-radius-lg: 0.75rem;
+}
+
+/* Global Styles */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+/* Navbar - GitHub Style */
+.navbar-dark {
+    background-color: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand {
+    color: var(--text-primary) !important;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.navbar-dark .nav-link {
+    color: var(--text-secondary) !important;
+}
+
+.navbar-dark .nav-link:hover {
+    color: var(--text-primary) !important;
+}
+
+.btn-primary-custom {
+    background-color: var(--accent-orange);
+    border: 1px solid var(--accent-orange);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-primary-custom:hover {
+    background-color: var(--accent-orange-hover);
+    border-color: var(--accent-orange-hover);
+    color: white;
+}
+
+/* Hero Section - GitHub Dark */
+.hero-section {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.hero-section h1 {
+    color: var(--text-primary);
+}
+
+.hero-section p {
+    color: var(--text-secondary);
+}
+
+/* Cards - GitHub Style */
+.card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    color: var(--text-primary);
+}
+
+.card-header {
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.card-footer {
+    background-color: transparent;
+    border-top: 1px solid var(--border-color);
+}
+
+.card-title {
+    color: var(--text-primary);
+}
+
+.card-text {
+    color: var(--text-secondary);
+}
+
+/* Hover Effects */
+.hover-lift {
+    transition: all 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.15);
+    border-color: var(--accent-orange);
+}
+
+/* Buttons - GitHub Orange Theme */
+.btn-primary {
+    background-color: var(--accent-orange);
+    border-color: var(--accent-orange);
+    color: white;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-orange-hover);
+    border-color: var(--accent-orange-hover);
+    color: white;
+}
+
+.btn-outline-primary {
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+    background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--accent-orange);
+    border-color: var(--accent-orange);
+    color: white;
+}
+
+.btn-success {
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+}
+
+.btn-outline-success {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+.btn-warning {
+    background-color: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    color: var(--bg-primary);
+}
+
+/* Progress Bars - Green */
+.progress {
+    background-color: var(--bg-tertiary);
+    border-radius: var(--border-radius);
+    height: 8px;
+}
+
+.progress-bar {
+    background-color: var(--accent-green);
+}
+
+.bg-success {
+    background-color: var(--accent-green) !important;
+}
+
+/* Badges */
+.badge {
+    padding: 0.35em 0.65em;
+    font-weight: 600;
+    border-radius: var(--border-radius);
+}
+
+.bg-primary {
+    background-color: var(--accent-orange) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--accent-green) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--bg-tertiary) !important;
+}
+
+/* Forms - GitHub Dark */
+.form-control,
+.form-select {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--bg-secondary);
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+.form-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.form-check-input {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+.form-check-input:checked {
+    background-color: var(--accent-orange);
+    border-color: var(--accent-orange);
+}
+
+.form-check-label {
+    color: var(--text-secondary);
+}
+
+/* Tables - GitHub Dark */
+.table {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.table-light {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(249, 115, 22, 0.1);
+}
+
+/* Alerts - GitHub Style */
+.alert {
+    border-radius: var(--border-radius);
+    border: 1px solid;
+}
+
+.alert-success {
+    background-color: rgba(35, 134, 54, 0.15);
+    border-color: var(--accent-green);
+    color: #3fb950;
+}
+
+.alert-info {
+    background-color: rgba(88, 166, 255, 0.15);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.alert-warning {
+    background-color: rgba(210, 153, 34, 0.15);
+    border-color: var(--accent-yellow);
+    color: var(--accent-yellow);
+}
+
+.alert-danger {
+    background-color: rgba(218, 54, 51, 0.15);
+    border-color: var(--accent-red);
+    color: #f85149;
+}
+
+/* Accordion - GitHub Dark */
+.accordion-item {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.accordion-button {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: none;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--accent-orange);
+    color: white;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: var(--accent-orange);
+}
+
+.accordion-body {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+/* List Group - GitHub Dark */
+.list-group-item {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.list-group-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.list-group-item.active {
+    background-color: var(--accent-orange);
+    border-color: var(--accent-orange);
+    color: white;
+}
+
+.list-group-item a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.list-group-item.active a {
+    color: white;
+}
+
+/* Dropdown - GitHub Dark */
+.dropdown-menu {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.dropdown-item {
+    color: var(--text-secondary);
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.dropdown-divider {
+    border-color: var(--border-color);
+}
+
+/* Footer - GitHub Dark */
+footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+/* Text Colors */
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+.text-white {
+    color: var(--text-primary) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text-primary);
+}
+
+/* Links */
+a {
+    color: var(--accent-blue);
+}
+
+a:hover {
+    color: #79c0ff;
+}
+
+/* Background Utilities */
+.bg-light {
+    background-color: var(--bg-secondary) !important;
+}
+
+.bg-dark {
+    background-color: var(--bg-primary) !important;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-orange-hover) 100%);
+}
+
+/* Video Player */
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Sidebar */
+.lecture-sidebar {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.lecture-sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.lecture-sidebar::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+.lecture-sidebar::-webkit-scrollbar-thumb {
+    background: var(--accent-orange);
+    border-radius: 4px;
+}
+
+/* Breadcrumb - GitHub Dark */
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item {
+    color: var(--text-secondary);
+}
+
+.breadcrumb-item a {
+    color: var(--accent-blue);
+    text-decoration: none;
+}
+
+.breadcrumb-item.active {
+    color: var(--text-primary);
+}
+
+.breadcrumb-item+.breadcrumb-item::before {
+    color: var(--text-muted);
+}
+
+/* Stat Cards - GitHub Colors */
+.stat-icon-orange {
+    background-color: rgba(249, 115, 22, 0.2);
+    color: var(--accent-orange);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon-green {
+    background-color: rgba(35, 134, 54, 0.2);
+    color: var(--accent-green);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon-blue {
+    background-color: rgba(88, 166, 255, 0.2);
+    color: var(--accent-blue);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon-yellow {
+    background-color: rgba(210, 153, 34, 0.2);
+    color: var(--accent-yellow);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Custom Scrollbar - GitHub Orange */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-orange);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-orange-hover);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}

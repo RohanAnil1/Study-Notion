@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            {% if course.thumbnail %}
+            <img src="{{ url_for('static', filename=course.thumbnail) }}" class="img-fluid rounded mb-4"
+                alt="{{ course.title }}">
+            {% else %}
+            <div class="bg-gradient-primary text-white rounded p-5 mb-4 text-center">
+                <i class="bi bi-book-fill" style="font-size: 6rem; opacity: 0.5;"></i>
+            </div>
+            {% endif %}
+
+            <h1 class="fw-bold mb-3">{{ course.title }}</h1>
+            <p class="lead text-muted mb-4">{{ course.description }}</p>
+
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-person-fill text-primary me-2"></i>
+                <span class="fw-bold">{{ course.instructor or 'Unknown Instructor' }}</span>
+                {% if course.category %}
+                <span class="badge bg-primary ms-3">{{ course.category.name }}</span>
+                {% endif %}
+            </div>
+
+            {% if is_enrolled %}
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                You are enrolled in this course
+                <div class="progress mt-2" style="height: 25px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;">{{ progress }}%
+                        Complete</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <h3 class="fw-bold mt-5 mb-3">Course Content</h3>
+            <div class="accordion" id="courseSections">
+                {% for section in course.sections.order_by(Section.order).all() %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#section{{ section.id }}">
+                            <strong>{{ section.title }}</strong>
+                            <span class="badge bg-secondary ms-2">{{ section.lectures.count() }} lectures</span>
+                        </button>
+                    </h2>
+                    <div id="section{{ section.id }}"
+                        class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+                        data-bs-parent="#courseSections">
+                        <div class="accordion-body">
+                            {% if section.description %}
+                            <p class="text-muted">{{ section.description }}</p>
+                            {% endif %}
+                            <ul class="list-group list-group-flush">
+                                {% for lecture in section.lectures.order_by(Lecture.order).all() %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-play-circle me-2"></i>
+                                        {% if is_enrolled %}
+                                        <a href="{{ url_for('main.video_player', lecture_id=lecture.id) }}">{{
+                                            lecture.title }}</a>
+                                        {% else %}
+                                        {{ lecture.title }}
+                                        {% endif %}
+                                    </div>
+                                    {% if lecture.duration %}
+                                    <span class="badge bg-light text-dark">{{ lecture.duration }} min</span>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg sticky-top" style="top: 20px;">
+                <div class="card-body p-4">
+                    {% if is_enrolled %}
+                    <a href="{{ url_for('main.profile') }}" class="btn btn-success btn-lg w-100 mb-3">
+                        <i class="bi bi-check-circle me-2"></i>Go to Study Hub
+                    </a>
+                    {% set first_section = course.sections.order_by(Section.order).first() %}
+                    {% if first_section %}
+                    {% set first_lecture = first_section.lectures.order_by(Lecture.order).first() %}
+                    {% if first_lecture %}
+                    <a href="{{ url_for('main.video_player', lecture_id=first_lecture.id) }}"
+                        class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-play-fill me-2"></i>Continue Learning
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                    {% else %}
+                    <h4 class="fw-bold mb-3">Ready to start learning?</h4>
+                    <p class="text-muted mb-4">Enroll now to access all course content and AI-powered features.</p>
+                    {% if current_user.is_authenticated %}
+                    <form method="POST" action="{{ url_for('main.enroll_course', course_id=course.id) }}">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-plus-circle me-2"></i>Enroll Now
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-lg w-100 mb-2">Login to Enroll</a>
+                    <a href="{{ url_for('main.register') }}" class="btn btn-outline-primary btn-lg w-100">Create
+                        Account</a>
+                    {% endif %}
+                    {% endif %}
+
+                    <hr class="my-4">
+
+                    <h5 class="fw-bold mb-3">What you'll learn</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>AI-generated summaries</li>
+                        <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Interactive quizzes</li>
+                        <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Structured study notes</li>
+                        <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Progress tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

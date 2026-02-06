@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.instructor_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Media Manager</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Media Manager</h2>
+            <p class="text-muted">Upload and manage your media files</p>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up me-2"></i>Upload New File</h5>
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="row align-items-end">
+                    <div class="col-md-6 mb-3">
+                        {{ form.file.label(class="form-label") }}
+                        {{ form.file(class="form-control") }}
+                        <small class="form-text text-muted">Allowed: JPG, JPEG, PNG, PDF, DOC, DOCX, PPT, PPTX</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", placeholder="Optional description") }}
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-upload me-1"></i>Upload
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Media Files -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">Your Files</h5>
+
+            {% if media_files %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>File</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for media in media_files %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if media.file_type == 'image' %}
+                                    <i class="bi bi-image text-primary me-2" style="font-size: 1.5rem;"></i>
+                                    {% else %}
+                                    <i class="bi bi-file-earmark text-secondary me-2" style="font-size: 1.5rem;"></i>
+                                    {% endif %}
+                                    <span class="text-truncate" style="max-width: 250px;" title="{{ media.filename }}">{{ media.filename }}</span>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-info">{{ media.file_type or 'unknown' }}</span></td>
+                            <td>
+                                {% if media.file_size %}
+                                    {% if media.file_size > 1048576 %}
+                                        {{ (media.file_size / 1048576)|round(1) }} MB
+                                    {% else %}
+                                        {{ (media.file_size / 1024)|round(1) }} KB
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ media.uploaded_at.strftime('%b %d, %Y') if media.uploaded_at else '-' }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('main.delete_media', media_id=media.id) }}"
+                                    style="display: inline;"
+                                    onsubmit="return confirm('Delete this file?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-folder2-open text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-2">No files uploaded yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

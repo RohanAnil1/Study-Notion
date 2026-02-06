@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.instructor_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.instructor_courses') }}">Courses</a></li>
+            <li class="breadcrumb-item active">{{ 'New Course' if is_new else course.title }}</li>
+        </ol>
+    </nav>
+
+    <h2 class="fw-bold mb-4">{{ 'Create New Course' if is_new else 'Edit Course' }}</h2>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label fw-bold") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Enter course title") }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback">{% for error in form.title.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label fw-bold") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=5, placeholder="Describe your course...") }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback">{% for error in form.description.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.category_id.label(class="form-label fw-bold") }}
+                            {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                            {% if form.category_id.errors %}
+                            <div class="invalid-feedback">{% for error in form.category_id.errors %}{{ error }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.thumbnail.label(class="form-label fw-bold") }}
+                            {{ form.thumbnail(class="form-control") }}
+                            {% if not is_new and course and course.thumbnail %}
+                            <div class="mt-2">
+                                <small class="text-muted">Current thumbnail:</small><br>
+                                <img src="{{ url_for('static', filename=course.thumbnail) }}" class="rounded mt-1" style="max-height: 100px;">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>{{ 'Create Course' if is_new else 'Save Changes' }}
+                            </button>
+                            <a href="{{ url_for('main.instructor_courses') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% if not is_new and course %}
+        <div class="col-lg-4">
+            <!-- Publish / Unpublish -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Course Status</h5>
+                    <p class="text-muted">
+                        {% if course.is_published %}
+                        <span class="badge bg-success">Published</span> — Visible to students
+                        {% else %}
+                        <span class="badge bg-secondary">Draft</span> — Not visible to students
+                        {% endif %}
+                    </p>
+                    <form method="POST" action="{{ url_for('main.publish_course', course_id=course.id) }}">
+                        <button type="submit" class="btn {{ 'btn-outline-warning' if course.is_published else 'btn-success' }} w-100">
+                            {% if course.is_published %}
+                            <i class="bi bi-eye-slash me-1"></i>Unpublish
+                            {% else %}
+                            <i class="bi bi-globe me-1"></i>Publish Course
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sections (only for existing courses) -->
+    {% if not is_new and course %}
+    <div class="card border-0 shadow-sm mt-2">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Sections</h4>
+                <a href="{{ url_for('main.create_section', course_id=course.id) }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Add Section
+                </a>
+            </div>
+
+            {% if sections %}
+            <div class="list-group" id="sections-list">
+                {% for section in sections %}
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-section-id="{{ section.id }}">
+                    <div>
+                        <i class="bi bi-grip-vertical text-muted me-2"></i>
+                        <strong>{{ section.order }}. {{ section.title }}</strong>
+                        <small class="text-muted ms-2">({{ section.lectures.count() }} lectures)</small>
+                        {% if section.description %}
+                        <br><small class="text-muted ms-4">{{ section.description[:80] }}{% if section.description|length > 80 %}...{% endif %}</small>
+                        {% endif %}
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('main.edit_section', section_id=section.id) }}" class="btn btn-outline-primary" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('main.delete_section', section_id=section.id) }}"
+                            style="display: inline;"
+                            onsubmit="return confirm('Delete this section and all its lectures?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3 mb-0">No sections yet. Add your first section to start building the course.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

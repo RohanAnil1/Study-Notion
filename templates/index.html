@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-white py-5">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="display-4 fw-bold mb-3">Welcome to Study-Notion</h1>
+                <p class="lead mb-2">AI-Powered Online Learning Platform</p>
+                <p class="mb-4">Discover courses, learn at your own pace, and leverage AI to enhance your learning
+                    experience with smart summaries, study notes, and intelligent quizzes.</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('main.course_catalog') }}" class="btn btn-primary-custom btn-lg px-4">Browse
+                        Courses</a>
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('main.register') }}" class="btn btn-outline-primary btn-lg px-4">Get Started</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block text-center">
+                <i class="bi bi-mortarboard-fill" style="font-size: 200px; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Powered Learning Features</h2>
+            <p class="text-muted">Experience the power of AI in your learning journey</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon-lg mb-3">
+                            <i class="bi bi-file-text-fill text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="fw-bold">Smart Summaries</h4>
+                        <p class="text-muted">Get AI-generated summaries of lectures to quickly grasp key concepts and
+                            save time.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon-lg mb-3">
+                            <i class="bi bi-journal-text text-success" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="fw-bold">Study Notes</h4>
+                        <p class="text-muted">Automatically generate structured study notes with key points and
+                            examples.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon-lg mb-3">
+                            <i class="bi bi-patch-question-fill text-warning" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4 class="fw-bold">AI Quizzes</h4>
+                        <p class="text-muted">Test your knowledge with AI-generated quizzes tailored to lecture content.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Courses -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold">Featured Courses</h2>
+            <a href="{{ url_for('main.course_catalog') }}" class="btn btn-outline-primary">View All</a>
+        </div>
+
+        {% if featured_courses %}
+        <div class="row g-4">
+            {% for course in featured_courses %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    {% if course.thumbnail %}
+                    <img src="{{ url_for('static', filename=course.thumbnail) }}" class="card-img-top"
+                        alt="{{ course.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-gradient-primary d-flex align-items-center justify-content-center text-white"
+                        style="height: 200px;">
+                        <i class="bi bi-book-fill" style="font-size: 4rem; opacity: 0.5;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        {% if course.category %}
+                        <span class="badge bg-primary mb-2">{{ course.category.name }}</span>
+                        {% endif %}
+                        <h5 class="card-title fw-bold">{{ course.title }}</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-person-fill me-1"></i>{{ course.instructor or 'Unknown' }}
+                        </p>
+                        <p class="card-text text-muted">{{ course.description[:100] }}{% if course.description|length >
+                            100 %}...{% endif %}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a href="{{ url_for('main.course_details', course_id=course.id) }}"
+                            class="btn btn-primary w-100">View Course</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+            <p class="text-muted mt-3">No courses available yet. Check back soon!</p>
+            {% if current_user.is_authenticated and current_user.role == 'instructor' %}
+            <a href="{{ url_for('main.create_course') }}" class="btn btn-primary mt-2">Create Your First Course</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Categories -->
+{% if categories %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="fw-bold text-center mb-4">Browse by Category</h2>
+        <div class="row g-3">
+            {% for category in categories %}
+            <div class="col-md-3 col-sm-6">
+                <a href="{{ url_for('main.course_catalog', category=category.id) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm hover-lift h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-folder-fill text-primary mb-2" style="font-size: 2rem;"></i>
+                            <h6 class="fw-bold mb-1">{{ category.name }}</h6>
+                            <p class="text-muted small mb-0">{{ category.description or 'Explore courses' }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

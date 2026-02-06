@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.video_player', lecture_id=lecture.id) }}">{{
+                    lecture.title }}</a></li>
+            <li class="breadcrumb-item active">Quiz</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0"><i class="bi bi-patch-question-fill me-2"></i>AI-Generated Quiz</h4>
+        </div>
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">{{ lecture.title }}</h5>
+
+            {% if quiz_data and quiz_data.questions %}
+            <form method="POST" action="{{ url_for('main.submit_quiz', lecture_id=lecture.id) }}">
+                {{ form.hidden_tag() }}
+
+                {% for question in quiz_data.questions %}
+                <div class="mb-4 p-3 border rounded">
+                    <h6 class="fw-bold">Question {{ loop.index }}</h6>
+                    <p>{{ question.question }}</p>
+
+                    {% for option in question.options %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="question_{{ loop.index0 }}"
+                            id="q{{ loop.index0 }}_opt{{ loop.index0 }}" value="{{ loop.index0 }}" required>
+                        <label class="form-check-label" for="q{{ loop.index0 }}_opt{{ loop.index0 }}">
+                            {{ option.text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning">Submit Quiz</button>
+                    <a href="{{ url_for('main.video_player', lecture_id=lecture.id) }}"
+                        class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+            {% elif result %}
+            <div class="alert alert-success">
+                <h5><i class="bi bi-check-circle-fill me-2"></i>Quiz Complete!</h5>
+                <p class="mb-0">You scored {{ result.score }} out of {{ result.total }} ({{ result.percentage }}%)</p>
+            </div>
+
+            <div class="mt-4">
+                {% for item in result.answers %}
+                <div
+                    class="mb-3 p-3 border rounded {% if item.correct %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}">
+                    <h6 class="fw-bold">Question {{ loop.index }}</h6>
+                    <p>{{ item.question }}</p>
+                    <p class="mb-0">
+                        <strong>Your answer:</strong> {{ item.user_answer }}<br>
+                        {% if not item.correct %}
+                        <strong class="text-success">Correct answer:</strong> {{ item.correct_answer }}
+                        {% endif %}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-4">
+                <a href="{{ url_for('main.video_player', lecture_id=lecture.id) }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Lecture
+                </a>
+                <a href="{{ url_for('main.generate_quiz_page', lecture_id=lecture.id) }}"
+                    class="btn btn-outline-warning">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Retake Quiz
+                </a>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Generating quiz... This may take a moment.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

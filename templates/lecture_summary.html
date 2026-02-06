@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.video_player', lecture_id=lecture.id) }}">{{
+                    lecture.title }}</a></li>
+            <li class="breadcrumb-item active">AI Summary</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-file-text-fill me-2"></i>AI-Generated Summary</h4>
+        </div>
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">{{ lecture.title }}</h5>
+
+            {% if summary %}
+            <div class="summary-content">
+                {{ summary|nl2br|safe }}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Generating summary... This may take a moment.
+            </div>
+            {% endif %}
+
+            <div class="mt-4">
+                <a href="{{ url_for('main.video_player', lecture_id=lecture.id) }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Lecture
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

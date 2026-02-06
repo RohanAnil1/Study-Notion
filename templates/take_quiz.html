@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.course_catalog') }}">Courses</a></li>
+            <li class="breadcrumb-item active">{{ quiz.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning bg-opacity-10 p-4">
+                    <h2 class="fw-bold mb-1"><i class="bi bi-question-circle me-2"></i>{{ quiz.title }}</h2>
+                    {% if quiz.description %}
+                    <p class="text-muted mb-0">{{ quiz.description }}</p>
+                    {% endif %}
+                    <span class="badge bg-secondary mt-2">{{ quiz.questions.count() }} questions</span>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('main.take_quiz', quiz_id=quiz.id) }}">
+                        {% set questions = quiz.questions.all() %}
+                        {% for question in questions %}
+                        <div class="mb-4 p-3 border rounded">
+                            <h5 class="fw-bold mb-3">
+                                <span class="badge bg-primary me-2">{{ loop.index }}</span>
+                                {{ question.question }}
+                            </h5>
+                            <div class="ms-3">
+                                {% for option in question.options.all() %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio"
+                                        name="question_{{ question.id }}"
+                                        id="q{{ question.id }}_opt{{ option.id }}"
+                                        value="{{ option.id }}" required>
+                                    <label class="form-check-label" for="q{{ question.id }}_opt{{ option.id }}">
+                                        {{ option.option_text }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% if questions %}
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>Submit Quiz
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">No questions in this quiz yet.</p>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

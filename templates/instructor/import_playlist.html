@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.instructor_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Import YouTube Playlist</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-center mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="text-danger me-3" viewBox="0 0 16 16">
+            <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.01 2.01 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.01 2.01 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31 31 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.01 2.01 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A100 100 0 0 1 7.858 2zM6.4 5.209v4.818l4.157-2.408z"/>
+        </svg>
+        <div>
+            <h2 class="fw-bold mb-0">Import from YouTube Playlist</h2>
+            <p class="text-muted mb-0">Paste a playlist URL to auto-create chapters with video details</p>
+        </div>
+    </div>
+
+    {% if not playlist_data %}
+    {# ── STEP 1: Paste playlist URL ── #}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-lg-5">
+                    <form method="POST" id="fetchForm">
+                        <input type="hidden" name="action" value="fetch">
+
+                        <div class="mb-4">
+                            <label for="playlist_url" class="form-label fw-bold">
+                                <i class="bi bi-link-45deg me-1"></i>YouTube Playlist URL
+                            </label>
+                            <input type="url" class="form-control form-control-lg" id="playlist_url"
+                                   name="playlist_url" required
+                                   placeholder="https://www.youtube.com/playlist?list=PL..."
+                                   value="{{ playlist_url or '' }}">
+                            <div class="form-text">
+                                Paste the full YouTube playlist URL. Each video will become a chapter in your course.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="category_id" class="form-label fw-bold">
+                                <i class="bi bi-tag me-1"></i>Course Category
+                            </label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="" disabled selected>Select a category...</option>
+                                {% for id, name in categories %}
+                                <option value="{{ id }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-lg" id="fetchBtn">
+                                <i class="bi bi-cloud-download me-2"></i>Fetch Playlist
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            This will extract titles, descriptions, durations and video URLs from the playlist.
+                            Large playlists may take a minute to process.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How it works -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-lightning-charge me-2"></i>How It Works</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4 text-center">
+                            <div class="rounded-circle bg-danger bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                                <span class="fw-bold text-danger">1</span>
+                            </div>
+                            <p class="small mb-0">Paste a YouTube playlist URL</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="rounded-circle bg-danger bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                                <span class="fw-bold text-danger">2</span>
+                            </div>
+                            <p class="small mb-0">Preview &amp; select videos to import</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="rounded-circle bg-danger bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                                <span class="fw-bold text-danger">3</span>
+                            </div>
+                            <p class="small mb-0">Course auto-created with all chapters!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    {# ── STEP 2: Preview & Confirm ── #}
+    <form method="POST" id="createForm">
+        <input type="hidden" name="action" value="create">
+
+        <!-- Course Info Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white p-4 border-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="fw-bold mb-0">
+                            <i class="bi bi-collection-play me-2 text-danger"></i>
+                            Playlist: {{ playlist_data.title }}
+                        </h5>
+                        <small class="text-muted">
+                            {{ playlist_data.video_count }} videos found &middot;
+                            Channel: {{ playlist_data.channel }}
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                        <a href="{{ url_for('main.import_playlist') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i>Change Playlist
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label for="course_title" class="form-label fw-bold">Course Title</label>
+                        <input type="text" class="form-control" id="course_title" name="course_title"
+                               value="{{ playlist_data.title }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="category_id" class="form-label fw-bold">Category</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="" disabled>Select a category...</option>
+                            {% for id, name in categories %}
+                            <option value="{{ id }}" {{ 'selected' if selected_category|string == id|string else '' }}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="course_description" class="form-label fw-bold">Course Description</label>
+                        <textarea class="form-control" id="course_description" name="course_description"
+                                  rows="3" placeholder="Enter a description for your course...">{{ playlist_data.description }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Select All / Actions Bar -->
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body py-3 px-4 d-flex justify-content-between align-items-center">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAll" checked>
+                    <label class="form-check-label fw-bold" for="selectAll">
+                        Select All Videos (<span id="selectedCount">{{ playlist_data.video_count }}</span> / {{ playlist_data.video_count }})
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-success btn-lg" id="createBtn">
+                    <i class="bi bi-plus-circle me-2"></i>Create Course
+                </button>
+            </div>
+        </div>
+
+        <!-- Video Cards -->
+        <div class="row g-3" id="videoList">
+            {% for video in playlist_data.videos %}
+            <div class="col-12 video-card">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-3">
+                        <div class="row align-items-start">
+                            <!-- Checkbox + Number -->
+                            <div class="col-auto d-flex align-items-center">
+                                <input class="form-check-input video-checkbox me-3" type="checkbox"
+                                       name="selected_videos" value="{{ loop.index0 }}" checked
+                                       style="width: 1.3em; height: 1.3em;">
+                                <span class="badge bg-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                      style="width: 32px; height: 32px; font-size: 0.85rem;">{{ loop.index }}</span>
+                            </div>
+
+                            <!-- Thumbnail -->
+                            <div class="col-auto d-none d-md-block">
+                                {% if video.thumbnail %}
+                                <img src="{{ video.thumbnail }}" alt="{{ video.title }}"
+                                     class="rounded" style="width: 160px; height: 90px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-dark rounded d-flex align-items-center justify-content-center"
+                                     style="width: 160px; height: 90px;">
+                                    <i class="bi bi-play-btn text-white" style="font-size: 2rem;"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Video Details -->
+                            <div class="col">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="fw-bold mb-1">{{ video.title }}</h6>
+                                    <span class="badge bg-dark ms-2 text-nowrap">
+                                        <i class="bi bi-clock me-1"></i>{{ video.duration_display }}
+                                    </span>
+                                </div>
+                                {% if video.description %}
+                                <p class="text-muted small mb-0 video-desc-preview">
+                                    {{ video.description[:200] }}{% if video.description|length > 200 %}...{% endif %}
+                                </p>
+                                {% if video.description|length > 200 %}
+                                <a href="#" class="small text-primary toggle-desc" data-idx="{{ loop.index0 }}">Show more</a>
+                                <p class="text-muted small mb-0 video-desc-full d-none" data-idx="{{ loop.index0 }}">
+                                    {{ video.description }}
+                                </p>
+                                {% endif %}
+                                {% else %}
+                                <p class="text-muted small mb-0 fst-italic">No description available</p>
+                                {% endif %}
+
+                                {% if video.channel %}
+                                <small class="text-muted"><i class="bi bi-person me-1"></i>{{ video.channel }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden fields to carry video data -->
+                <input type="hidden" name="video_title_{{ loop.index0 }}" value="{{ video.title }}">
+                <input type="hidden" name="video_url_{{ loop.index0 }}" value="{{ video.url }}">
+                <input type="hidden" name="video_duration_{{ loop.index0 }}" value="{{ video.duration_seconds }}">
+                <input type="hidden" name="video_description_{{ loop.index0 }}" value="{{ video.description }}">
+                <input type="hidden" name="video_id_{{ loop.index0 }}" value="{{ video.id }}">
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Bottom Create Button -->
+        <div class="text-center mt-4 mb-5">
+            <button type="submit" class="btn btn-success btn-lg px-5">
+                <i class="bi bi-plus-circle me-2"></i>Create Course with <span id="bottomCount">{{ playlist_data.video_count }}</span> Chapters
+            </button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+     style="background: rgba(0,0,0,0.5); z-index: 9999;">
+    <div class="card border-0 shadow-lg p-5 text-center" style="max-width: 400px;">
+        <div class="spinner-border text-danger mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 class="fw-bold mb-2" id="loadingTitle">Fetching Playlist...</h5>
+        <p class="text-muted mb-0" id="loadingText">
+            Extracting video data from YouTube. This may take a moment for large playlists.
+        </p>
+    </div>
+</div>
+
+<style>
+.video-card {
+    transition: opacity 0.3s ease;
+}
+.video-card.deselected {
+    opacity: 0.45;
+}
+.video-card .card:hover {
+    border-left: 3px solid #dc3545 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Loading overlay for fetch
+    const fetchForm = document.getElementById('fetchForm');
+    if (fetchForm) {
+        fetchForm.addEventListener('submit', function() {
+            document.getElementById('loadingOverlay').classList.remove('d-none');
+            document.getElementById('loadingOverlay').classList.add('d-flex');
+        });
+    }
+
+    // Loading overlay for create
+    const createForm = document.getElementById('createForm');
+    if (createForm) {
+        createForm.addEventListener('submit', function() {
+            const overlay = document.getElementById('loadingOverlay');
+            document.getElementById('loadingTitle').textContent = 'Creating Course...';
+            document.getElementById('loadingText').textContent = 'Building your course chapters. This will just take a moment.';
+            overlay.classList.remove('d-none');
+            overlay.classList.add('d-flex');
+        });
+    }
+
+    // Select all checkbox
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        const checkboxes = document.querySelectorAll('.video-checkbox');
+
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+                const card = cb.closest('.video-card');
+                card.classList.toggle('deselected', !this.checked);
+            });
+            updateCount();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                const card = this.closest('.video-card');
+                card.classList.toggle('deselected', !this.checked);
+                const allChecked = [...checkboxes].every(c => c.checked);
+                const someChecked = [...checkboxes].some(c => c.checked);
+                selectAll.checked = allChecked;
+                selectAll.indeterminate = someChecked && !allChecked;
+                updateCount();
+            });
+        });
+
+        function updateCount() {
+            const count = document.querySelectorAll('.video-checkbox:checked').length;
+            document.getElementById('selectedCount').textContent = count;
+            const bottom = document.getElementById('bottomCount');
+            if (bottom) bottom.textContent = count;
+        }
+    }
+
+    // Toggle description
+    document.querySelectorAll('.toggle-desc').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const idx = this.dataset.idx;
+            const full = document.querySelector(`.video-desc-full[data-idx="${idx}"]`);
+            const preview = this.previousElementSibling;
+            if (full.classList.contains('d-none')) {
+                full.classList.remove('d-none');
+                preview.classList.add('d-none');
+                this.textContent = 'Show less';
+            } else {
+                full.classList.add('d-none');
+                preview.classList.remove('d-none');
+                this.textContent = 'Show more';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

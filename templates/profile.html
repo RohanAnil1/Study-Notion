@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">Study Hub</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h4 class="fw-bold">Welcome back, {{ current_user.first_name }}!</h4>
+                    <p class="text-muted">Continue your learning journey</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold">{{ enrolled_courses|length }}</h5>
+                    <p class="text-muted mb-0">Enrolled Courses</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="fw-bold mb-3">My Courses</h4>
+
+    {% if enrolled_courses %}
+    <div class="row g-4">
+        {% for item in enrolled_courses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                {% if item.course.thumbnail %}
+                <img src="{{ url_for('static', filename=item.course.thumbnail) }}" class="card-img-top"
+                    alt="{{ item.course.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-gradient-primary d-flex align-items-center justify-content-center text-white"
+                    style="height: 200px;">
+                    <i class="bi bi-book-fill" style="font-size: 4rem; opacity: 0.5;"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ item.course.title }}</h5>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-person-fill me-1"></i>{{ item.course.instructor }}
+                    </p>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Progress</small>
+                            <small class="fw-bold">{{ item.progress }}%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                style="width: {{ item.progress }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pb-3">
+                    <a href="{{ url_for('main.course_details', course_id=item.course.id) }}"
+                        class="btn btn-primary w-100">
+                        <i class="bi bi-play-fill me-2"></i>Continue Learning
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+        <p class="text-muted mt-3">You haven't enrolled in any courses yet.</p>
+        <a href="{{ url_for('main.course_catalog') }}" class="btn btn-primary mt-2">Browse Courses</a>
+    </div>
+    {% endif %}
+
+    <hr class="my-5">
+
+    <h4 class="fw-bold mb-3">Profile Information</h4>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.first_name.label(class="form-label") }}
+                        {{ form.first_name(class="form-control") }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.last_name.label(class="form-label") }}
+                        {{ form.last_name(class="form-control") }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-control") }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.profile_pic.label(class="form-label") }}
+                    {{ form.profile_pic(class="form-control") }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            {% if course.thumbnail %}
+            <img src="{{ url_for('static', filename=course.thumbnail) }}" class="img-fluid rounded mb-4"
+                alt="{{ course.title }}">
+            {% else %}
+            <div class="bg-gradient-primary text-white rounded p-5 mb-4 text-center">
+                <i class="bi bi-book-fill" style="font-size: 6rem; opacity: 0.5;"></i>
+            </div>
+            {% endif %}
+
+            <h1 class="fw-bold mb-3">{{ course.title }}</h1>
+            <p class="lead text-muted mb-4">{{ course.description }}</p>
+
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-person-fill text-primary me-2"></i>
+                <span class="fw-bold">{{ course.instructor or 'Unknown Instructor' }}</span>
+                {% if course.category %}
+                <span class="badge bg-primary ms-3">{{ course.category.name }}</span>
+                {% endif %}
+            </div>
+
+            {% if is_enrolled %}
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle-fill me-2"></i>You are enrolled in this course
+            </div>
+            {% endif %}
+
+            <h3 class="fw-bold mt-4 mb-3">Modules</h3>
+
+            {% if modules %}
+            <div class="accordion" id="courseModules">
+                {% for module in modules %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#module{{ module.id }}">
+                            <strong>{{ module.order }}. {{ module.title }}</strong>
+                            <span class="badge bg-secondary ms-2">{{ module.lessons.count() }} lessons</span>
+                        </button>
+                    </h2>
+                    <div id="module{{ module.id }}"
+                        class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
+                        data-bs-parent="#courseModules">
+                        <div class="accordion-body">
+                            {% if module.description %}
+                            <p class="text-muted mb-3">{{ module.description }}</p>
+                            {% endif %}
+                            <ul class="list-group list-group-flush">
+                                {% for lesson in module.lessons.all() %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-journal-text text-primary me-2"></i>
+                                        {{ lesson.title }}
+                                    </div>
+                                    {% if is_enrolled %}
+                                    <a href="{{ url_for('main.view_lesson', lesson_id=lesson.id) }}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-play-fill me-1"></i>Start
+                                    </a>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                                {% for quiz in module.quizzes.all() %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-question-circle text-warning me-2"></i>
+                                        {{ quiz.title }}
+                                    </div>
+                                    {% if is_enrolled %}
+                                    <a href="{{ url_for('main.take_quiz', quiz_id=quiz.id) }}"
+                                        class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil-square me-1"></i>Take Quiz
+                                    </a>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% if is_enrolled %}
+                            <a href="{{ url_for('main.view_module', module_id=module.id) }}"
+                                class="btn btn-primary btn-sm mt-3">
+                                <i class="bi bi-arrow-right me-1"></i>Go to Module
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-2">No modules have been added yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Course Info</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-layers me-2 text-primary"></i>
+                            <strong>{{ modules|length }}</strong> modules
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-person me-2 text-primary"></i>
+                            {{ course.instructor or 'Unknown' }}
+                        </li>
+                    </ul>
+
+                    {% if not is_enrolled %}
+                    <form method="POST" action="{{ url_for('main.enroll_course', course_id=course.id) }}">
+                        <button type="submit" class="btn btn-primary w-100 btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Enroll Now
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-success mb-0 text-center">
+                        <i class="bi bi-check-circle-fill me-1"></i>Enrolled
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -250,7 +250,7 @@ User ─────────────┬──> Enrollment <──── 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Study-Notion.git
+git clone https://github.com/RohanAnil1/Study-Notion.git
 cd Study-Notion
 
 # Create virtual environment
@@ -301,7 +301,7 @@ This app can be deployed for **free** on [PythonAnywhere](https://www.pythonanyw
 ### Step 2 — Upload Code
 Open a **Bash console** from the Dashboard and run:
 ```bash
-git clone https://github.com/yourusername/Study-Notion.git
+git clone https://github.com/RohanAnil1/Study-Notion.git
 cd Study-Notion
 ```
 

@@ -139,6 +139,7 @@ def seconds_to_time_format(seconds):
 def fetch_playlist_data(playlist_url):
     """
     Extract video metadata from a YouTube playlist using yt-dlp.
+    Uses extract_flat mode for fast, single-request extraction.
     
     Returns:
         tuple: (playlist_info dict, error_message string)
@@ -153,9 +154,9 @@ def fetch_playlist_data(playlist_url):
         'quiet': True,
         'no_warnings': True,
         'ignoreerrors': True,
-        'extract_flat': False,      # Full extraction to get descriptions
+        'extract_flat': True,          # Fast: single request for all metadata
         'socket_timeout': 30,
-        'noplaylist': False,        # Ensure we treat it as a playlist
+        'noplaylist': False,            # Ensure we treat it as a playlist
     }
 
     try:
@@ -163,31 +164,43 @@ def fetch_playlist_data(playlist_url):
             info = ydl.extract_info(playlist_url, download=False)
 
         if not info:
-            return None, "Could not extract playlist information. Please check the URL."
+            return None, "Could not extract playlist information. Please check the URL is a valid public YouTube playlist."
 
-        # yt-dlp returns 'entries' for playlists
-        entries = info.get('entries')
-        if not entries:
+        # yt-dlp returns 'entries' for playlists (may be a generator)
+        raw_entries = info.get('entries')
+        if not raw_entries:
             return None, "No videos found in this playlist. Make sure the URL is a valid public playlist."
+
+        # Convert generator to list and filter out None entries
+        entries = [e for e in raw_entries if e is not None]
+        if not entries:
+            return None, "All videos in this playlist are unavailable or private."
 
         videos = []
         for entry in entries:
-            if entry is None:
-                continue
-
             duration_secs = entry.get('duration') or 0
             mins = int(duration_secs // 60)
             secs = int(duration_secs % 60)
             video_id = entry.get('id', '')
 
+            # Get best available thumbnail
+            thumbnail = ''
+            thumbnails = entry.get('thumbnails')
+            if thumbnails and isinstance(thumbnails, list):
+                thumbnail = thumbnails[-1].get('url', '')
+            if not thumbnail:
+                thumbnail = entry.get('thumbnail') or ''
+            if not thumbnail and video_id:
+                thumbnail = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
+
             videos.append({
                 'id': video_id,
                 'title': entry.get('title') or 'Untitled Video',
-                'url': entry.get('webpage_url') or f"https://www.youtube.com/watch?v={video_id}",
+                'url': entry.get('url') or entry.get('webpage_url') or f"https://www.youtube.com/watch?v={video_id}",
                 'duration_seconds': int(duration_secs),
                 'duration_display': f"{mins}:{secs:02d}",
                 'description': (entry.get('description') or '')[:3000],
-                'thumbnail': entry.get('thumbnail') or '',
+                'thumbnail': thumbnail,
                 'channel': entry.get('channel') or entry.get('uploader') or '',
             })
 

@@ -82,6 +82,11 @@ Study-Notion/
 ├── extensions.py            # Flask extension instances
 ├── filters.py               # Custom Jinja2 template filters
 ├── pyproject.toml           # Python project dependencies
+├── requirements.txt         # Pinned pip dependencies for deployment
+├── pythonanywhere_wsgi.py   # Reference WSGI config for PythonAnywhere
+├── serve.py                 # Production launcher (0.0.0.0:5000)
+├── start_server.bat         # Windows auto-restart batch script
+├── install_service.bat      # NSSM Windows service installer
 ├── .env                     # Environment variables (API keys)
 ├── data/
 │   └── courses.json         # Seed data (10 categories)
@@ -134,13 +139,13 @@ Study-Notion/
 
 | File | Purpose |
 |---|---|
-| **`main.py`** | Application entry point. Contains `create_app()` factory function that initializes Flask, registers extensions (SQLAlchemy, Flask-Login, Flask-Migrate), registers the blueprint, creates database tables via `db.create_all()`, seeds initial categories from `data/courses.json` using `load_initial_data()`, and starts the development server on port **5000** with debug mode enabled. |
+| **`main.py`** | Application entry point. Contains `create_app()` factory function that initializes Flask, registers extensions (SQLAlchemy, Flask-Login, Flask-Migrate), registers the blueprint, **auto-creates the database directory** from the SQLite URI, creates tables via `db.create_all()`, and seeds initial categories from `data/courses.json` using `load_initial_data()`. The module-level `app = create_app()` is guarded inside `if __name__ == '__main__'` so it doesn't execute during WSGI import on production servers. |
 | **`routes.py`** | The core routing module (**1,600+ lines**). Defines a single Flask Blueprint `main_bp` with all **40 route handlers** organized into: public routes (landing, catalog, login, register), student routes (enrollment, video player, AI features, quiz-taking), and instructor routes (dashboard, course CRUD, section/lecture management, YouTube import, media manager, AJAX reorder endpoints). Also includes the `@instructor_required` decorator for role-based access control. |
 | **`models.py`** | Defines **14 SQLAlchemy ORM models** — `User`, `Category`, `Course`, `Section`, `Lecture`, `Module`, `Lesson`, `Enrollment`, `LectureProgress`, `UserProgress`, `Quiz`, `QuizQuestion`, `QuizOption`, `QuizAttempt`, and `Media`. The `User` model integrates Flask-Login's `UserMixin` and includes Werkzeug password hashing methods (`set_password()`, `check_password()`). Also contains the `load_initial_data()` function that seeds the database with categories from `data/courses.json`. |
 | **`forms.py`** | Contains **11 WTForms form classes** with CSRF protection via Flask-WTF: `LoginForm`, `RegistrationForm` (with role selection), `ProfileForm` (with avatar upload), `SearchForm`, `CourseForm`, `SectionForm`, `LectureForm` (with video URL and rich text content), `MediaUploadForm`, `QuizGeneratorForm`, `ModuleForm`, `LessonForm`, `QuizForm`, and `QuizQuestionForm`. Each form defines validators for data integrity (required fields, email format, length constraints, file type restrictions). |
 | **`ai_services.py`** | Google Gemini AI integration module (**470 lines**). Exposes three main functions: `generate_quiz()` — creates MCQ quizzes from lecture content, `generate_lecture_summary()` — produces key-point summaries, and `generate_study_notes()` — builds structured study notes. Each function attempts the Gemini API (1.5 Flash → 1.5 Pro fallback) and gracefully falls back to offline-generated content if no API key is set or the API call fails. Includes JSON response parsing, prompt engineering, and error handling with logging. |
 | **`utils.py`** | Utility module (**207 lines**). Provides: `save_uploaded_file()` — saves files with UUID renaming to prevent collisions, `allowed_file()` — validates file extensions, `extract_youtube_id()` — extracts video IDs from various YouTube URL formats (watch, short, embed), and `fetch_playlist_data()` — uses **yt-dlp** to extract full metadata (titles, descriptions, durations, thumbnails, video IDs) from a YouTube playlist URL without downloading any video content. |
-| **`config.py`** | Application configuration class. Loads environment variables from `.env` via `python-dotenv`. Defines: `SECRET_KEY`, `SQLALCHEMY_DATABASE_URI` (defaults to SQLite), SQLAlchemy pool settings, upload folder paths (`course_thumbnails/`, `profile_pics/`, `media/`), allowed file extensions for images (jpg, jpeg, png) and documents (pdf, doc, docx, ppt, pptx), and file size limits (16 MB general, 2 MB images, 10 MB documents). |
+| **`config.py`** | Application configuration class. Loads environment variables from `.env` via `python-dotenv`. Computes an **absolute path** for the SQLite database (`instance/app.db` relative to the project root) so it works reliably on any platform including PythonAnywhere. Defines: `SECRET_KEY`, `SQLALCHEMY_DATABASE_URI`, SQLAlchemy pool settings with `pool_recycle` and `pool_pre_ping`, upload folder paths (`course_thumbnails/`, `profile_pics/`, `media/`), allowed file extensions for images (jpg, jpeg, png) and documents (pdf, doc, docx, ppt, pptx), and file size limits (16 MB general, 2 MB images, 10 MB documents). |
 | **`extensions.py`** | Initializes Flask extension instances **without binding them to the app** (factory pattern). Creates `db` (SQLAlchemy), `login_manager` (Flask-Login), and `migrate` (Flask-Migrate) objects that are later bound in `main.py` via `init_app()`. This avoids circular imports between modules. |
 | **`filters.py`** | Registers custom Jinja2 template filters. Currently provides `nl2br` — converts newline characters (`\n`) to HTML `<br>` tags using `markupsafe.Markup` for safe rendering. Filters are registered via `init_app(app)` called from `main.py`. |
 | **`pyproject.toml`** | Python project metadata and dependency manifest. Lists all required packages (Flask, SQLAlchemy, Flask-Login, Flask-WTF, google-generativeai, yt-dlp, etc.) and their minimum versions. Used by `pip` or `uv` for dependency installation. |
@@ -150,8 +155,18 @@ Study-Notion/
 | File | Purpose |
 |---|---|
 | **`data/courses.json`** | Seed data file containing **10 course categories**: Web Development, Data Science, Machine Learning & AI, Mobile Development, DevOps & Cloud, Cybersecurity, Database Management, Programming Languages, Software Engineering, and UI/UX Design. Each category has a name and description. Loaded automatically on first run by `load_initial_data()`. |
-| **`.env`** | Environment variables file (not committed to git). Stores `SECRET_KEY`, `GEMINI_API_KEY`, and optionally `DATABASE_URL`. The app works fully without `GEMINI_API_KEY` — AI features use offline fallbacks. |
-| **`instance/app.db`** | SQLite database file auto-created on first run. Stores all application data: users (with hashed passwords), courses, sections, lectures, enrollments, quiz data, progress records, and media references. Located in Flask's `instance/` folder. |
+| **`.env`** | Environment variables file (not committed to git). Stores `SECRET_KEY` and `GEMINI_API_KEY`. Optionally accepts `DATABASE_URL` to override the default SQLite path (e.g., for PostgreSQL). The app works fully without `GEMINI_API_KEY` — AI features use offline fallbacks. |
+| **`instance/app.db`** | SQLite database file auto-created on first run. Stores all application data: users (with hashed passwords), courses, sections, lectures, enrollments, quiz data, progress records, and media references. Located in the `instance/` folder (auto-created by `main.py`). |
+
+### Deployment & Hosting
+
+| File | Purpose |
+|---|---|
+| **`requirements.txt`** | Pinned pip dependencies generated from the virtual environment. Used by PythonAnywhere and other hosts to install exact package versions. Contains 16 packages including Flask, SQLAlchemy, yt-dlp, google-generativeai, etc. |
+| **`pythonanywhere_wsgi.py`** | Reference WSGI configuration file for PythonAnywhere deployment. Copy its contents into the PythonAnywhere WSGI config file. Sets `sys.path`, environment variables, and creates the `application` object via `create_app()`. |
+| **`serve.py`** | Production launcher script. Imports `create_app()` and runs the Flask server on `0.0.0.0:5000` with debug disabled. Used for LAN-accessible local hosting. |
+| **`start_server.bat`** | Windows batch script for 24/7 local hosting. Runs the Flask server in a loop that auto-restarts on crash with a 5-second delay. |
+| **`install_service.bat`** | Windows batch script that uses NSSM (Non-Sucking Service Manager) to install the Flask app as a Windows service that starts automatically on boot. |
 
 ### Static Assets
 
@@ -273,10 +288,9 @@ Create a `.env` file in the project root:
 ```env
 SECRET_KEY=your-secret-key-here
 GEMINI_API_KEY=your-google-gemini-api-key
-DATABASE_URL=sqlite:///app.db
 ```
 
-> **Note:** The app works fully without a Gemini API key — AI features gracefully fall back to offline-generated content.
+> **Note:** The app works fully without a Gemini API key — AI features gracefully fall back to offline-generated content. The SQLite database is auto-created at `instance/app.db` — no `DATABASE_URL` needed.
 
 ### Run the Application
 
@@ -329,12 +343,13 @@ if project_home not in sys.path:
 
 os.environ['SECRET_KEY'] = 'change-this-to-a-real-secret-key'
 os.environ['GEMINI_API_KEY'] = ''  # Optional: add your Gemini API key
-os.environ['DATABASE_URL'] = 'sqlite:////home/yourusername/Study-Notion/instance/app.db'
 
 from main import create_app
 application = create_app()
 ```
-> ⚠️ Replace `yourusername` with your actual PythonAnywhere username everywhere above.
+> ⚠️ Replace `yourusername` with your actual PythonAnywhere username.
+> 
+> **Note:** No `DATABASE_URL` is needed — the app automatically uses an absolute path to `instance/app.db` relative to the project root, and creates the directory if it doesn't exist.
 
 ### Step 6 — Static Files
 On the **Web** tab, add a static file mapping:

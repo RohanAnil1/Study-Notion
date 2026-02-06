@@ -51,6 +51,10 @@ def create_app(config_class=Config):
 
     # Create tables and seed initial data
     with app.app_context():
+        # Ensure instance directory exists for SQLite
+        instance_path = app.instance_path
+        if not os.path.exists(instance_path):
+            os.makedirs(instance_path)
         db.create_all()
         from models import load_initial_data
         load_initial_data()

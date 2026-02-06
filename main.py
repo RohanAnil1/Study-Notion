@@ -30,9 +30,10 @@ def create_app(config_class=Config):
 
     # Setup logging only if not running migrations
     if not app.debug and not app.testing and not os.environ.get('FLASK_DB_COMMAND'):
-        if not os.path.exists('logs'):
-            os.mkdir('logs')
-        file_handler = RotatingFileHandler('logs/websiteenhancer.log',
+        log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+        if not os.path.exists(log_dir):
+            os.mkdir(log_dir)
+        file_handler = RotatingFileHandler(os.path.join(log_dir, 'websiteenhancer.log'),
                                          maxBytes=10240, backupCount=10)
         file_handler.setFormatter(logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s '

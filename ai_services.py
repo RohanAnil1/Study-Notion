@@ -6,7 +6,10 @@ Provides integration with Google's Gemini AI for generating quizzes, summaries, 
 import os
 import logging
 import json
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+except Exception:
+    genai = None
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -20,7 +23,7 @@ try:
     api_key = os.environ.get('GEMINI_API_KEY')
     logger.info(f"API Key found: {bool(api_key)}")
     
-    if api_key and api_key != "your_new_api_key_here":
+    if genai and api_key and api_key != "your_new_api_key_here":
         # Configure with API version v1
         genai.configure(api_key=api_key, transport="rest")
         logger.info("Gemini API configured successfully")

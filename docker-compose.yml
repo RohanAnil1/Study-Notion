@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  study-notion:
+    build: .
+    container_name: study-notion
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist database and uploads between container restarts
+      - study-notion-db:/app/instance
+      - study-notion-uploads:/app/static/uploads
+      - study-notion-logs:/app/logs
+    environment:
+      - SECRET_KEY=study-notion-docker-secret-2026
+      - GEMINI_API_KEY=          # Optional: add your Google Gemini API key
+      - FLASK_ENV=production
+
+volumes:
+  study-notion-db:
+  study-notion-uploads:
+  study-notion-logs:

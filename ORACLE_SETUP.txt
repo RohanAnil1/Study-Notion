@@ -1,0 +1,258 @@
+============================================================
+  STUDY-NOTION — Oracle Cloud Free Tier Setup Guide
+============================================================
+  GitHub: https://github.com/RohanAnil1/Study-Notion
+  Date:   February 2026
+============================================================
+
+
+PART 1: CREATE ORACLE CLOUD ACCOUNT
+------------------------------------------------------------
+1. Go to https://cloud.oracle.com → Click "Sign Up"
+2. Fill in real name, email, address (they verify identity)
+3. Add a credit/debit card (you will NOT be charged — free tier is permanent)
+4. Select Home Region → pick closest to you (e.g., Mumbai, London, etc.)
+5. Wait ~5 minutes for account provisioning
+6. Log in to Oracle Cloud Console
+
+
+PART 2: CREATE A FREE VM INSTANCE
+------------------------------------------------------------
+1. In Oracle Console → hamburger menu → Compute → Instances
+2. Click "Create Instance"
+3. Configure:
+
+   Name:    study-notion
+   Image:   Ubuntu 22.04 (click "Edit" → "Change Image" if needed)
+   Shape:   Click "Change Shape" →
+            → Select "Ampere" (ARM processor)
+            → Choose "VM.Standard.A1.Flex"
+            → Set OCPUs: 2
+            → Set Memory: 12 GB
+            (You can use up to 4 OCPUs + 24GB free, but 2+12 is plenty)
+
+   Network: Keep default VCN or create new one
+
+   SSH Key: Click "Generate a key pair"
+            → Click "Save Private Key" → downloads a .key file
+            → SAVE THIS FILE SAFELY — you need it to connect!
+            → Also save the public key if prompted
+
+4. Click "Create" → wait 2-3 minutes for RUNNING status
+5. COPY the "Public IP Address" shown on the instance detail page
+   → Example: 129.154.xxx.xxx
+   → You'll need this IP for everything below
+
+
+PART 3: OPEN PORT 5000 IN ORACLE SECURITY RULES
+------------------------------------------------------------
+1. On your instance page → click the "Subnet" link (under Primary VNIC)
+2. Click on the Security List (e.g., "Default Security List for vcn-xxx")
+3. Click "Add Ingress Rules"
+4. Fill in:
+   - Stateless:               No (unchecked)
+   - Source Type:              CIDR
+   - Source CIDR:              0.0.0.0/0
+   - IP Protocol:              TCP
+   - Destination Port Range:   5000
+   - Description:              Study-Notion web app
+5. Click "Add Ingress Rules"
+
+
+PART 4: CONNECT TO YOUR VM VIA SSH
+------------------------------------------------------------
+Open PowerShell (or Terminal) on your PC and run:
+
+   ssh -i "C:\Users\YourName\Downloads\your-key-file.key" ubuntu@YOUR_PUBLIC_IP
+
+Replace:
+  - C:\Users\YourName\Downloads\your-key-file.key → actual path to downloaded key
+  - YOUR_PUBLIC_IP → the IP you copied in Part 2
+
+If you get a permissions error on Windows:
+   Right-click the .key file → Properties → Security → Advanced
+   → Disable inheritance → Remove all except your user account
+   → Your user should have Full Control
+
+Type "yes" when asked about fingerprint.
+
+You should see:  ubuntu@study-notion:~$
+
+
+PART 5: INSTALL DOCKER ON THE VM
+------------------------------------------------------------
+Run these commands ONE BY ONE (copy-paste each line):
+
+   sudo apt update && sudo apt upgrade -y
+
+   curl -fsSL https://get.docker.com | sh
+
+   sudo usermod -aG docker $USER
+
+   sudo apt install -y docker-compose-plugin
+
+   exit
+
+Now SSH back in (same ssh command from Part 4).
+
+Verify Docker is working:
+
+   docker --version
+
+Should show something like: Docker version 27.x.x
+
+
+PART 6: DEPLOY STUDY-NOTION
+------------------------------------------------------------
+Run these commands:
+
+   git clone https://github.com/RohanAnil1/Study-Notion.git
+
+   cd Study-Notion
+
+   docker compose up -d --build
+
+This will:
+  - Download Python 3.12 image
+  - Install all dependencies (Flask, yt-dlp, ffmpeg, etc.)
+  - Build the Docker image
+  - Start the app with gunicorn (production server)
+
+First build takes 3-5 minutes on ARM. Be patient.
+
+Check if it's running:
+
+   docker ps
+
+You should see a container named "study-notion" with status "Up".
+
+
+PART 7: OPEN FIREWALL ON UBUNTU
+------------------------------------------------------------
+Oracle's Ubuntu also has an internal firewall. Open port 5000:
+
+   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 5000 -j ACCEPT
+
+   sudo apt install -y netfilter-persistent
+
+   sudo netfilter-persistent save
+
+
+PART 8: TEST IT!
+------------------------------------------------------------
+Open your browser and go to:
+
+   http://YOUR_PUBLIC_IP:5000
+
+Replace YOUR_PUBLIC_IP with the IP from Part 2.
+
+You should see the Study-Notion landing page!
+
+
+============================================================
+  EVERYDAY COMMANDS (bookmark these)
+============================================================
+
+SSH into your VM:
+   ssh -i "C:\path\to\key.key" ubuntu@YOUR_PUBLIC_IP
+
+Check if app is running:
+   docker ps
+
+View live logs:
+   docker compose logs -f
+
+Restart the app:
+   docker compose restart
+
+Stop the app:
+   docker compose down
+
+Update after pushing code changes to GitHub:
+   cd ~/Study-Notion
+   git pull
+   docker compose up -d --build
+
+Rebuild from scratch:
+   docker compose down
+   docker compose up -d --build
+
+
+============================================================
+  OPTIONAL: ADD GEMINI API KEY
+============================================================
+If you want AI features (quiz generation, lecture summaries):
+
+1. SSH into the VM
+2. cd ~/Study-Notion
+3. Edit docker-compose.yml:
+      nano docker-compose.yml
+4. Change this line:
+      - GEMINI_API_KEY=
+   To:
+      - GEMINI_API_KEY=your-actual-api-key
+5. Save: Ctrl+O, Enter, Ctrl+X
+6. Restart:
+      docker compose up -d
+
+
+============================================================
+  OPTIONAL: USE PORT 80 (no :5000 in URL)
+============================================================
+If you want http://YOUR_IP instead of http://YOUR_IP:5000:
+
+1. Add port 80 ingress rule in Oracle Security List (same as Part 3 but port 80)
+2. Edit docker-compose.yml, change ports:
+      ports:
+        - "80:5000"
+3. Open Ubuntu firewall:
+      sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
+      sudo netfilter-persistent save
+4. Rebuild:
+      docker compose up -d
+
+
+============================================================
+  WHAT YOU GET FOR FREE (FOREVER)
+============================================================
+  ✓ 2 ARM CPUs + 12GB RAM
+  ✓ 47GB boot volume
+  ✓ Public static IP
+  ✓ 10TB/month outbound bandwidth
+  ✓ Runs 24/7 with auto-restart on crash
+  ✓ No credit card charges (Always Free tier)
+
+
+============================================================
+  TROUBLESHOOTING
+============================================================
+
+Problem: "Permission denied" when SSH-ing
+Fix:     Check the .key file permissions (see Part 4)
+
+Problem: Can't reach http://IP:5000 in browser
+Fix:     1. Check Oracle Security List has port 5000 open (Part 3)
+         2. Check Ubuntu firewall is open (Part 7)
+         3. Run "docker ps" to confirm container is running
+         4. Run "docker compose logs" to check for errors
+
+Problem: Docker build fails
+Fix:     Run "docker compose logs" to see the error
+         Usually: low disk space or network timeout — retry with:
+         docker compose down
+         docker compose up -d --build
+
+Problem: "Out of host capacity" when creating VM
+Fix:     Oracle free ARM instances are popular. Try:
+         - Different availability domain (AD-1, AD-2, AD-3)
+         - Smaller shape (1 OCPU, 6GB RAM)
+         - Try again later (early morning works best)
+         - Try a different region
+
+Problem: Site loads but looks broken (no CSS)
+Fix:     CSS loads from Bootstrap CDN — should work automatically.
+         If not, check "docker compose logs -f" for errors.
+
+============================================================
+  END OF GUIDE — Good luck! 🚀
+============================================================
